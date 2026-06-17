@@ -80,7 +80,8 @@ $body-bg: white;
 $body-color: black;
 
 // Theme colors
-$primary:   #188191;
+// PhilSA POC: brand the accent/primary as Philippine national blue (was #188191 teal).
+$primary:   #0038A8;
 $secondary: #6c757d;
 $success:   #28a745;
 $info:      $secondary; // unused
@@ -95,7 +96,8 @@ $subheadings-color: #6c757d; // h2 only
 $headings-color: inherit; // h3, h4, h5, h6
 
 // Link colors
-$link-color: #188191;
+// PhilSA POC: match links to the Philippine national blue accent (was #188191 teal).
+$link-color: #0038A8;
 $link-hover-color: darken($link-color, 20%);
 
 $link-color-on-primary: tint-color($primary, 60%);

@@ -1,8 +1,18 @@
 export default {
-  catalogUrl: null,
-  catalogTitle: "STAC Browser",
-  catalogImage: null,
-  allowExternalAccess: true, // Must be true if catalogUrl is not given
+  // PhilSA POC: lock the Browser to our own pgSTAC API only.
+  // catalogUrl is the stac-fastapi-pgstac endpoint. Override for a deployed
+  // API host via the SB_catalogUrl env var (or public/runtime-config.js).
+  catalogUrl: "http://localhost:8082",
+  catalogTitle: "PhilSA Geospatial Data Catalog",
+  // Header logo, served from public/. Must be a full (scheme-qualified) URL —
+  // stac-js resolves catalogImage as a Link and returns null for relative hrefs,
+  // so a root-relative "/philsa-logo.png" would not render. This points at the
+  // Browser's own dev origin (vite :8080); override with SB_catalogImage when
+  // deployed behind another host.
+  catalogImage: "http://localhost:8080/philsa-logo.png",
+  // false => the Browser ONLY ever loads the catalogUrl above; it cannot be
+  // pointed at any other (external) STAC catalog. This is the PhilSA requirement.
+  allowExternalAccess: false,
   allowedDomains: [],
   enforcedColorMode: "auto",
   detectLocaleFromBrowser: true,
