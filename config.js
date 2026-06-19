@@ -43,11 +43,49 @@ export default {
   ],
   apiCatalogPriority: null,
   useTileLayerAsFallback: false,
-  displayGeoTiffByDefault: false,
+  displayGeoTiffByDefault: true,
   displayPreview: true,
   displayOverview: true,
   displayOverviewsForChildren: false,
-  buildTileUrlTemplate: null,
+  // Render the silver COGs through TiTiler (repo-root compose.viz.yml, :8083)
+  // instead of the client-side renderer. Single-band Float32 rasters (NDVI, SAR
+  // backscatter) need a rescale + colormap or they show as a black tile; the
+  // 3-band true-colour COG renders natively. R2-hosted COGs are read over the
+  // AUTHENTICATED S3 endpoint, so we rewrite the public r2.dev asset URL to an
+  // s3://<bucket>/<key> URL (its DNS is reliable; the public host is not).
+  // ESRI 10 m LULC is a by-reference public Azure blob (not in R2) and a
+  // single-band uint8 categorical raster, so it bypasses the s3 rewrite and gets
+  // a discrete colormap built from the item's classification:classes hints.
+  buildTileUrlTemplate: (asset) => {
+    const href = asset.getAbsoluteUrl();
+    const tilePath = "http://localhost:8083/cog/tiles/WebMercatorQuad/{z}/{x}/{y}?url=";
+
+    // ESRI LULC: read the public Azure COG directly, color by class value.
+    if (href.includes("lulctimeseries.blob.core.windows.net")) {
+      // Impact Observatory v003 9-class scheme (value -> RGBA). 0 = nodata.
+      const esriColormap = {
+        1:  [26, 91, 171, 255],   // Water
+        2:  [53, 130, 33, 255],   // Trees
+        4:  [135, 209, 158, 255], // Flooded vegetation
+        5:  [255, 219, 92, 255],  // Crops
+        7:  [237, 2, 42, 255],    // Built area
+        8:  [237, 233, 228, 255], // Bare ground
+        9:  [242, 250, 255, 255], // Snow/ice
+        10: [200, 200, 200, 255], // Clouds
+        11: [198, 173, 141, 255], // Rangeland
+      };
+      return tilePath + encodeURIComponent(href) +
+        "&colormap=" + encodeURIComponent(JSON.stringify(esriColormap));
+    }
+
+    // R2-hosted silver COGs: rewrite to the authenticated s3:// endpoint.
+    const key = href.replace(/^https?:\/\/[^/]+\//, "");
+    const s3 = "s3://world-bank-philsa-geo/" + key;
+    const base = tilePath + encodeURIComponent(s3);
+    if (href.includes("/sentinel2-ndvi/")) return base + "&rescale=-0.2,0.8&colormap_name=rdylgn";
+    if (href.includes("/sentinel1-sar/")) return base + "&rescale=15,55&colormap_name=gray";
+    return base; // true-colour = native 3-band RGB
+  },
   getMapSourceOptions: null,
   pathPrefix: "/",
   historyMode: "history",
