@@ -84,6 +84,7 @@ export default {
     const base = tilePath + encodeURIComponent(s3);
     if (href.includes("/sentinel2-ndvi/")) return base + "&rescale=-0.2,0.8&colormap_name=rdylgn";
     if (href.includes("/sentinel1-sar/")) return base + "&rescale=15,55&colormap_name=gray";
+    if (href.includes("/sentinel1-ratio/")) return base + "&rescale=-14,-2&colormap_name=ylgn";
     if (href.includes("/sentinel1-flood/")) {
       // categorical Byte mask: 1=water, 2=permanent water (0/land + 255/nodata transparent)
       const floodColormap = { 1: [33, 102, 204, 255], 2: [120, 170, 230, 255] };
