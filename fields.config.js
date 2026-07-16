@@ -27,13 +27,13 @@ function formatDayMonthYear(value) {
     return `${d.getUTCDate()} ${SHORT_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
-// "Metadata Last Updated" — present on every collection.
+// "Metadata Last Updated" - present on every collection.
 Registry.addMetadataField('philsa:metadata_updated', {
     label: 'Metadata Last Updated',
     formatter: formatDayMonthYear
 });
 
-// "Update frequency" — present on the ESRI raster collection.
+// "Update frequency" - present on the ESRI raster collection.
 Registry.addMetadataField('philsa:update_frequency', {
     label: 'Update frequency'
 });
@@ -44,7 +44,7 @@ Registry.addMetadataField('gsd', {
     unit: 'm'
 });
 
-// Item-level acquisition window — friendlier than the defaults
+// Item-level acquisition window - friendlier than the defaults
 // ("Time of Data begins" / "Time of Data ends"); keep them out of collection
 // summaries (summary: false) so they show under the item's General section.
 Registry.addMetadataField('start_datetime', {

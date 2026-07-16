@@ -4,7 +4,7 @@ export default {
   // API host via the SB_catalogUrl env var (or public/runtime-config.js).
   catalogUrl: "http://localhost:8082",
   catalogTitle: "PhilSA Geospatial Data Catalog",
-  // Header logo, served from public/. Must be a full (scheme-qualified) URL —
+  // Header logo, served from public/. Must be a full (scheme-qualified) URL -
   // stac-js resolves catalogImage as a Link and returns null for relative hrefs,
   // so a root-relative "/philsa-logo.png" would not render. This points at the
   // Browser's own dev origin (vite :8080); override with SB_catalogImage when
