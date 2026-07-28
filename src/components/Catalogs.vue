@@ -183,10 +183,15 @@ export default defineComponent({
       // Sort
       if (!this.hasMore && !this.apiFilters.sortby && this.sort !== 0) {
         const collator = new Intl.Collator(this.uiLanguage);
-        catalogs = catalogs.slice(0).sort((a,b) => collator.compare(getDisplayTitle(a), getDisplayTitle(b)));
-        if (this.sort === -1) {
-          catalogs = catalogs.reverse();
-        }
+        // PhilSA POC: collections mirrored by reference from an upstream STAC
+        // carry `philsa:mirrored_from` (stamped by mirror_philsa_catalog.py).
+        // They outnumber PhilSA's own products ~10:1, so they always sort into a
+        // second block *after* them — the asc/desc toggle only reorders titles
+        // within each block, it never floats the mirrored ones to the top.
+        const mirrored = c => (c && c['philsa:mirrored_from'] ? 1 : 0);
+        catalogs = catalogs.slice(0).sort((a,b) =>
+          mirrored(a) - mirrored(b)
+          || this.sort * collator.compare(getDisplayTitle(a), getDisplayTitle(b)));
       }
       return catalogs;
     },

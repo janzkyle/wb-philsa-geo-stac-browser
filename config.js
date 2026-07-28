@@ -102,7 +102,13 @@ export default {
   showThumbnailsAsAssets: false,
   searchResultsPerPage: null,
   itemsPerPage: null,
-  collectionsPerPage: null,
+  // Ask for every collection in one page. The Browser only sorts the collection
+  // list client-side when there is nothing left to page in (Catalogs.vue:
+  // `if (this.hasMore) return this.catalogs`), and mirroring the PhilSA STAC
+  // brings the catalog to ~110 collections — past stac-fastapi's default page
+  // size, which would silently disable the sort that puts the by-reference
+  // collections last. Keep this >= the total collection count.
+  collectionsPerPage: 1000,
   maxEntriesPerPage: 1000,
   defaultThumbnailSize: null,
   crossOriginMedia: null,

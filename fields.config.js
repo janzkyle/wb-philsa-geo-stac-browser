@@ -38,6 +38,14 @@ Registry.addMetadataField('philsa:update_frequency', {
     label: 'Update frequency'
 });
 
+// Present on collections mirrored by reference from an upstream STAC API
+// (mirror_philsa_catalog.py). Also the sort key that pushes those collections to
+// the end of the catalog list - see src/components/Catalogs.vue.
+Registry.addMetadataField('philsa:mirrored_from', {
+    label: 'Mirrored From',
+    format: 'Url'
+});
+
 // Expand the "GSD" acronym to its full name (default label is just "GSD").
 Registry.addMetadataField('gsd', {
     label: 'Ground Sample Distance',
@@ -57,10 +65,6 @@ Registry.addMetadataField('end_datetime', {
     format: 'Timestamp',
     summary: false
 });
-
-// Render the STAC Contact extension under a "Contact Details" header
-// (default extension label is "Contacts").
-Registry.addExtension('contacts', 'Contact Details');
 
 // DEFINE FIELDS TO IGNORE IN METADATA RENDERING
 
