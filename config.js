@@ -1,3 +1,13 @@
+// PhilSA POC: build-time overrides for values the tile-URL function below needs.
+// vite.config.js turns every SB_* env var into CONFIG_FROM_ENV and `define`s it
+// into the bundle, but a function can't read the merged config at runtime, so
+// read it here. It doesn't exist when vite.config.js imports this file in Node.
+//   SB_titilerUrl  TiTiler base (deployed: the tiles gateway). Default: local :8083
+//   SB_r2Bucket    public R2 bucket the silver COGs live in
+const ENV = typeof CONFIG_FROM_ENV !== "undefined" ? CONFIG_FROM_ENV : {};
+const TITILER_URL = String(ENV.titilerUrl || "http://localhost:8083").replace(/\/+$/, "");
+const R2_BUCKET = ENV.r2Bucket || "world-bank-philsa-geo";
+
 export default {
   // PhilSA POC: lock the Browser to our own pgSTAC API only.
   // catalogUrl is the stac-fastapi-pgstac endpoint. Override for a deployed
@@ -47,7 +57,7 @@ export default {
   displayPreview: true,
   displayOverview: true,
   displayOverviewsForChildren: false,
-  // Render the silver COGs through TiTiler (repo-root compose.viz.yml, :8083)
+  // Render the silver COGs through TiTiler (SB_titilerUrl; locally compose.viz.yml, :8083)
   // instead of the client-side renderer. Single-band Float32 rasters (NDVI, SAR
   // backscatter) need a rescale + colormap or they show as a black tile; the
   // 3-band true-colour COG renders natively. R2-hosted COGs are read over the
@@ -56,9 +66,12 @@ export default {
   // ESRI 10 m LULC is a by-reference public Azure blob (not in R2) and a
   // single-band uint8 categorical raster, so it bypasses the s3 rewrite and gets
   // a discrete colormap built from the item's classification:classes hints.
+  // The rescale/colormap params mirror INTEGRATION_GUIDE.md section 2 (the source
+  // of truth) - keep them in step with it, webmap/src/config.ts, catalog_silver.py
+  // and partner-template/index.html.
   buildTileUrlTemplate: (asset) => {
     const href = asset.getAbsoluteUrl();
-    const tilePath = "http://localhost:8083/cog/tiles/WebMercatorQuad/{z}/{x}/{y}?url=";
+    const tilePath = TITILER_URL + "/cog/tiles/WebMercatorQuad/{z}/{x}/{y}?url=";
 
     // ESRI LULC: read the public Azure COG directly, color by class value.
     if (href.includes("lulctimeseries.blob.core.windows.net")) {
@@ -80,10 +93,10 @@ export default {
 
     // R2-hosted silver COGs: rewrite to the authenticated s3:// endpoint.
     const key = href.replace(/^https?:\/\/[^/]+\//, "");
-    const s3 = "s3://world-bank-philsa-geo/" + key;
+    const s3 = "s3://" + R2_BUCKET + "/" + key;
     const base = tilePath + encodeURIComponent(s3);
-    if (href.includes("/sentinel2-ndvi/")) return base + "&rescale=-0.2,0.8&colormap_name=rdylgn";
-    if (href.includes("/sentinel1-sar/")) return base + "&rescale=15,55&colormap_name=gray";
+    if (href.includes("/sentinel2-ndvi/")) return base + "&rescale=-0.2,0.9&colormap_name=rdylgn";
+    if (href.includes("/sentinel1-sar/")) return base + "&rescale=20,52&colormap_name=gray";
     if (href.includes("/sentinel1-ratio/")) return base + "&rescale=-14,-2&colormap_name=ylgn";
     if (href.includes("/sentinel1-flood/")) {
       // categorical Byte mask: 1=water, 2=permanent water (0/land + 255/nodata transparent)
